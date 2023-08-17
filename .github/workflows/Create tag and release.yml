@@ -1,0 +1,67 @@
+name: Create Release
+on:
+  workflow_dispatch:
+    inputs:
+        release_type:
+          description: 'Define the Release type'     
+          required: true
+          default: 'patch'
+          type: choice
+          options:
+            - patch
+            - minor
+            - major
+
+jobs:
+  fetch_tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch Swarm dev version 
+        with:
+          repository: weav-ai/Swarm-Dev  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+
+  bump_platform_version:
+    needs: fetch_tags
+    runs-on: ubuntu-latest
+    outputs:
+      bumped_platform_version: ${{ steps.bump_version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+      - name: Bump version
+        id: bump_version
+        uses: anothrNick/github-tag-action@1.61.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+          WITH_V: true
+          DRY_RUN: true
+          DEFAULT_BUMP: ${{ github.event.inputs.release_type }}
+
+  create_tag:
+    needs: [fetch_tags, bump_platform_version]
+    runs-on: ubuntu-latest
+    steps:      
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated Change
+          tagging_message: ${{ needs.bump_platform_version.outputs.bumped_platform_version }}
+          token: ${{ secrets.PERSONAL_TOKEN }}
+
+  create_release:
+    needs: [fetch_tags, bump_platform_version, create_tag]
+    runs-on: ubuntu-latest
+    steps: 
+      - name: create release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        with:
+          tag_name: ${{ needs.bump_platform_version.outputs.bumped_platform_version }}
+          name: ${{ needs.bump_platform_version.outputs.bumped_platform_version }}
+          body: ${{ needs.bump_platform_version.outputs.bumped_platform_version }}
+          draft: false
+          prerelease: false
