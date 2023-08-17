@@ -1,0 +1,31 @@
+name: Robot Framework Tests
+
+on:
+  push:
+    branches:
+      - '*'
+
+
+jobs:
+
+  robot_test:
+    runs-on: github-runner-weav
+    name: Run Robot Framework Tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Robot Framework
+        uses: joonvena/robotframework-docker-action@v1.0
+        with:
+          robot_tests_dir: 'automation-tests'
+          robot_reports_dir	: 'reports'
+          robot_options: --variable GS_PASSWORD:${{ secrets.WEAV_PASSWORD }}
+          robot_runner_image: peeyushweav/robotframework:latest
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test Results
+          path: reports
+        if: always()
