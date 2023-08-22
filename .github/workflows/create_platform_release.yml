@@ -1,0 +1,295 @@
+name: Create Platform Version
+
+on:
+  workflow_dispatch:
+    inputs:
+        release_type:
+          description: 'Define the Release type'     
+          required: true
+          default: 'patch'
+          type: choice
+          options:
+            - patch
+            - minor
+            - major
+
+jobs:
+  fetch_tags:
+    runs-on: github-runner-weav
+    outputs:
+      authentication_proxy_version: ${{ steps.authentication-proxy.outputs.tag }}
+      flask_server_version: ${{ steps.flask-server.outputs.tag }}
+      ingestion_service_version: ${{ steps.ingestion-service.outputs.tag }}
+      udf_service_version: ${{ steps.udf-service.outputs.tag }}
+      cutomer_dashboards_version: ${{ steps.cutomer-dashboards.outputs.tag }}
+      developer_platform_version: ${{ steps.developer-platform.outputs.tag }}
+      notification_service_version: ${{ steps.notification-service.outputs.tag }}
+      marketplace_service_version: ${{ steps.marketplace-service.outputs.tag }}
+      marketplace_app_ui_version: ${{ steps.marketplace-app-ui.outputs.tag }}
+      data_service_v1_version: ${{ steps.data-service-v1.outputs.tag }}
+      dataflow_service_version: ${{ steps.dataflow-service.outputs.tag }}
+      databrowser_service_version: ${{ steps.databrowser-service.outputs.tag }}
+      plotting_service_version: ${{ steps.plotting-service.outputs.tag }}
+      metrics_service_version: ${{ steps.metrics-service.outputs.tag }}
+      dashboard_ui_version: ${{ steps.dashboard-ui.outputs.tag }}
+      iquanti_inference_version: ${{ steps.iquanti-inference.outputs.tag }}
+      weav_mlflow_version: ${{ steps.weav-mlflow.outputs.tag }}
+    steps:
+### Find latest tag of remote repo
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch iquanti_inference version 
+        with:
+          repository: weav-ai/iquanti-inference-service  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: iquanti-inference  # The step ID to refer to later.
+      - run: echo "iquanti-inference is at version ${{ steps.iquanti-inference.outputs.tag }}"
+      
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch dashboard_ui version 
+        with:
+          repository: weav-ai/dashboard-ui  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: dashboard-ui  # The step ID to refer to later.
+      - run: echo "dashboard-ui is at version ${{ steps.dashboard-ui.outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch weav-mlflow version 
+        with:
+          repository: weav-ai/weav-mlflow  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: weav-mlflow  # The step ID to refer to later.
+      - run: echo "weav-mlflow is at version ${{ steps.weav-mlflow.outputs.tag }}"
+      
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch authentication-proxy version 
+        with:
+          repository: weav-ai/authentication-proxy  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: authentication-proxy  # The step ID to refer to later.
+      - run: echo "authentication-proxy is at version ${{ steps.authentication-proxy.outputs.tag }}"
+           
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch flask-server version 
+        with:
+          repository: weav-ai/flask-server # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: flask-server  # The step ID to refer to later.
+      - run: echo "flask-server is at version ${{ steps.flask-server.outputs.tag }}"
+           
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch ingestion-service version 
+        with:
+          repository: weav-ai/ingestion-service  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: ingestion-service  # The step ID to refer to later.
+      - run: echo "ingestion-service is at version ${{ steps.ingestion-service.outputs.tag }}"
+           
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch udf-service version 
+        with:
+          repository: weav-ai/udf-service  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: udf-service  # The step ID to refer to later.
+      - run: echo "udf-service is at version ${{ steps.udf-service.outputs.tag }}"
+           
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch cutomer-dashboards version 
+        with:
+          repository: weav-ai/cutomer-dashboards  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: cutomer-dashboards  # The step ID to refer to later.
+      - run: echo "cutomer-dashboards is at version ${{ steps.cutomer-dashboards.outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch developer-platform version 
+        with:
+          repository: weav-ai/developer-platform  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: developer-platform  # The step ID to refer to later.
+      - run: echo "developer-platform is at version ${{ steps.developer-platform.outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch notification-service  version 
+        with:
+          repository: weav-ai/notification-service   # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: notification-service   # The step ID to refer to later.
+      - run: echo "notification-service  is at version ${{ steps.notification-service .outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch marketplace-service version 
+        with:
+          repository: weav-ai/marketplace-service  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: marketplace-service  # The step ID to refer to later.
+      - run: echo "marketplace-service is at version ${{ steps.marketplace-service.outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch marketplace-app-ui version 
+        with:
+          repository: weav-ai/marketplace-app-ui  # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: marketplace-app-ui # The step ID to refer to later.
+      - run: echo "marketplace-app-ui is at version ${{ steps.marketplace-app-ui.outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch data-service-v1  version 
+        with:
+          repository: weav-ai/data-service-v1   # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: data-service-v1  # The step ID to refer to later.
+      - run: echo "data-service-v1  is at version ${{ steps.data-service-v1 .outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch dataflow-service  version 
+        with:
+          repository: weav-ai/dataflow-service   # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: dataflow-service  # The step ID to refer to later.
+      - run: echo "dataflow-service is at version ${{ steps.dataflow-service.outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch databrowser-service  version 
+        with:
+          repository: weav-ai/databrowser-service   # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: databrowser-service  # The step ID to refer to later.
+      - run: echo "databrowser-service is at version ${{ steps.databrowser-service.outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch plotting-service  version 
+        with:
+          repository: weav-ai/plotting-service   # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: plotting-service  # The step ID to refer to later.
+      - run: echo "plotting-service is at version ${{ steps.plotting-service.outputs.tag }}"
+
+      - uses: oprypin/find-latest-tag@v1
+        name: Fetch metrics-service  version 
+        with:
+          repository: weav-ai/metrics-service-v2   # The repository to scan.
+          releases-only: true  # We know that all relevant tags have a GitHub release for them.
+          token: ${{ secrets.PERSONAL_TOKEN }}
+        id: metrics-service  # The step ID to refer to later.
+      - run: echo "metrics-service is at version ${{ steps.metrics-service.outputs.tag }}"
+### end
+
+  bump_platform_version:
+    needs: fetch_tags
+    runs-on: github-runner-weav
+    outputs:
+      bumped_platform_version: ${{ steps.bump_version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+      - name: Bump version
+        id: bump_version
+        uses: anothrNick/github-tag-action@1.61.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+          WITH_V: true
+          DRY_RUN: true
+          DEFAULT_BUMP: ${{ github.event.inputs.release_type }}
+
+  generate_readme:
+    needs: [fetch_tags, bump_platform_version]
+    runs-on: github-runner-weav
+    steps:
+      - name: Generate Platform version details in README.md
+        run: |-
+          ls -lah
+          pwd
+          echo "Deployed on $(date -u +"%Y-%m-%dT%H:%M:%SZ")" > README.md
+          echo '## Platform version ${{ needs.bump_platform_version.outputs.bumped_platform_version }}' >> README.md
+          echo "- authentication-proxy is at version ${{ needs.fetch_tags.outputs.authentication_proxy_version }}" >> README.md
+          echo "- flask-server is at version ${{ needs.fetch_tags.outputs.flask_server_version }}" >> README.md
+          echo "- ingestion-service is at version ${{ needs.fetch_tags.outputs.ingestion_service_version }}" >> README.md
+          echo "- udf-service is at version ${{ needs.fetch_tags.outputs.udf_service_version }}" >> README.md
+          echo "- cutomer-dashboards is at version ${{ needs.fetch_tags.outputs.cutomer_dashboards_version }}" >> README.md
+          echo "- developer-platform is at version ${{ needs.fetch_tags.outputs.developer_platform_version }}" >> README.md
+          echo "- notification-service  is at version ${{ needs.fetch_tags.outputs.notification_service_version }}" >> README.md
+          echo "- marketplace-service is at version ${{ needs.fetch_tags.outputs.marketplace_service_version }}" >> README.md
+          echo "- marketplace-app-ui is at version ${{ needs.fetch_tags.outputs.marketplace_app_ui_version }}" >> README.md
+          echo "- data-service-v1  is at version ${{ needs.fetch_tags.outputs.data_service_v1_version }}" >> README.md
+          echo "- dataflow-service is at version ${{ needs.fetch_tags.outputs.dataflow_service_version }}" >> README.md
+          echo "- databrowser-service is at version ${{ needs.fetch_tags.outputs.databrowser_service_version }}" >> README.md
+          echo "- plotting-service is at version ${{ needs.fetch_tags.outputs.plotting_service_version }}" >> README.md
+          echo "- metrics-service is at version ${{ needs.fetch_tags.outputs.metrics_service_version }}" >> README.md
+          echo "- dashboard-ui is at version ${{ needs.fetch_tags.outputs.dashboard_ui_version }}" >> README.md
+          echo "- iquanti-inference is at version ${{ needs.fetch_tags.outputs.iquanti_inference_version }}" >> README.md
+          echo "- weav-mlflow is at version ${{ needs.fetch_tags.outputs.weav_mlflow_version }}" >> README.md
+
+### Replace
+  generate_yml:
+    needs: [fetch_tags, bump_platform_version]
+    runs-on: github-runner-weav
+    steps:
+      - name: Running replace
+        run: |-
+          ls -lah
+          pwd
+          sed -i 's/{{auth_proxy_version}}/${{ needs.fetch_tags.outputs.authentication_proxy_version }}/g' main.yml
+          sed -i 's/{{flask_server_version}}/${{ needs.fetch_tags.outputs.flask_server_version }}/g' main.yml
+          sed -i 's/{{weav_ingestion_version}}/${{ needs.fetch_tags.outputs.ingestion_service_version }}/g' main.yml
+          sed -i 's/{{udf_service_version}}/${{ needs.fetch_tags.outputs.udf_service_version }}/g' main.yml
+          sed -i 's/{{weav_dashboard_version}}/${{ needs.fetch_tags.outputs.cutomer_dashboards_version }}/g' main.yml
+          sed -i 's/{{weav_c5_dashboard_version}}/${{ needs.fetch_tags.outputs.cutomer_dashboards_version }}/g' main.yml   
+          sed -i 's/{{developer_platform_version}}/${{ needs.fetch_tags.outputs.developer_platform_version }}/g' main.yml
+          sed -i 's/{{weav_notification_version}}/${{ needs.fetch_tags.outputs.notification_service_version }}/g' main.yml
+          sed -i 's/{{weav_marketplace_version}}/${{ needs.fetch_tags.outputs.marketplace_service_version }}/g' main.yml
+          sed -i 's/{{marketplace_ui_version}}/${{ needs.fetch_tags.outputs.marketplace_app_ui_version }}/g' main.yml
+          sed -i 's/{{weav_data_v1_version}}/${{ needs.fetch_tags.outputs.data_service_v1_version }}/g' main.yml
+          sed -i 's/{{weav_dataflow_version}}/${{ needs.fetch_tags.outputs.dataflow_service_version }}/g' main.yml
+          sed -i 's/{{weav_databrowser_version}}/${{ needs.fetch_tags.outputs.databrowser_service_version }}/g' main.yml
+          sed -i 's/{{weav_plotting_version}}/${{ needs.fetch_tags.outputs.plotting_service_version }}/g' main.yml
+          sed -i 's/{{weav_metrics_version}}/${{ needs.fetch_tags.outputs.metrics_service_version }}/g' main.yml
+          sed -i 's/{{dashboard_ui_version}}/${{ needs.fetch_tags.outputs.dashboard_ui_version }}/g' main.yml
+          sed -i 's/{{iquanti_inference_version}}/${{ needs.fetch_tags.outputs.iquanti_inference_version }}/g' main.yml
+          sed -i 's/{{weav_mlflow_version}}/${{ needs.fetch_tags.outputs.weav_mlflow_version }}/g' main.yml
+          sed -i 's/{{platform_version_number}}/${{ needs.bump_platform_version.outputs.bumped_platform_version }}/g' main.yml
+  create_tag:
+    needs: [fetch_tags, bump_platform_version, generate_readme, generate_yml]
+    runs-on: github-runner-weav
+    steps:
+### Push the tag and create new branch      
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated Change
+          create_branch: true
+          branch: ${{ needs.bump_platform_version.outputs.bumped_platform_version }}
+          tagging_message: ${{ needs.bump_platform_version.outputs.bumped_platform_version }}
+          token: ${{ secrets.PERSONAL_TOKEN }}
+  
+  create_release:
+    needs: [fetch_tags, bump_platform_version, generate_readme, generate_yml,create_tag]
+    runs-on: github-runner-weav
+    steps:
+### Create Release with the tag created in previous step  
+      - name: create release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        with:
+          tag_name: ${{ needs.bump_platform_version.outputs.bumped_platform_version }}
+          name: ${{ needs.bump_platform_version.outputs.bumped_platform_version }}
+          body: ${{ needs.bump_platform_version.outputs.bumped_platform_version }}
+          body_path: README.md
+          draft: false
+          prerelease: false
