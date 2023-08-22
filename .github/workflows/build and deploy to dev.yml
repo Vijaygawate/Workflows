@@ -1,0 +1,64 @@
+name: Build and Deploy to Dev
+on:
+  pull_request:
+    branches:
+      - 'develop'
+    types: [closed]
+jobs:
+  build-and-deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Out Repo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+
+    # Login to Docker Hub
+    - name: docker hub login
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+
+      # Build and Push image
+    - name: Build and push
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        context: ./
+        file: ./Dockerfile
+        builder: ${{ steps.buildx.outputs.name }}
+        push: true
+        tags: peeyushweav/weav_c5_flask:swarm
+
+      # GCP Service Account
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+        
+    - name: Setup GCP Service Account
+      uses: google-github-actions/setup-gcloud@v1
+      
+    - id: 'compute-ssh'
+      uses: 'google-github-actions/ssh-compute@v0'
+      with:
+        instance_name: 'development-dev-weav-ai'
+        zone: 'us-central1-a'
+        ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
+        command: |
+          cd /opt/swarm-deployment
+          sudo docker pull peeyushweav/weav_c5_flask:swarm
+          sudo docker service update --force --image=peeyushweav/weav_c5_flask:swarm --force main_weav-c5-flask
+          for i in $(gcloud compute os-login ssh-keys list | grep -v FINGERPRINT); do echo $i; gcloud compute os-login ssh-keys remove --key $i; done
+    # Example of using the output
+    - id: 'Output'
+      run: |-
+        echo '${{ steps.compute-ssh.outputs.stdout }}'
+        echo '${{ steps.compute-ssh.outputs.stderr }}'
