@@ -1,0 +1,548 @@
+name: Deploy To an environment
+
+on:
+  workflow_dispatch:
+    inputs:
+        platform_version:
+          description: 'Define the Platform Version'     
+          required: true
+          default: 'v1.5.3'
+          type: choice
+          options:
+            - v1.7.3
+            - v1.7.4
+            - v1.7.5
+            - v1.7.6
+            - v1.7.7
+            - v1.7.8
+        environment:
+          description: 'Define env name'     
+          required: true
+          default: 'stage'
+          type: choice
+          options: 
+            - stage
+            - dsrocks
+            - qa
+            - app
+
+jobs:
+  
+  deploy-to-stage:
+    if: ${{ github.event.inputs.environment == 'stage' }}
+    runs-on: github-runner-weav
+    environment: 
+      name: Staging
+      url: staging.app.weav.ai
+    steps:
+      - uses: actions/checkout@v3
+        name: Check out repo and platform version tag branch
+        with:
+          ref: ${{ github.event.inputs.platform_version }}
+          token: ${{ secrets.PERSONAL_TOKEN }}
+      
+      - name: Run replaces
+        run: |-
+          echo "Running replace Vars"
+          sed -i 's!{{GS_PUBLIC_KEY}}!${{ secrets.GS_PUBLIC_KEY }}!g' main.yml
+          sed -i 's!{{GS_GELF_ADDRESS}}!${{ secrets.GS_GELF_ADDRESS }}!g' main.yml
+          sed -i 's!{{GS_REMOTE_AUTHENTICATION_URL}}!${{ secrets.GS_REMOTE_AUTHENTICATION_URL }}!g' main.yml
+          sed -i 's!{{GS_UDF_SERVICE_ID}}!${{ secrets.GS_UDF_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_UDF_AUDIENCE}}!${{ secrets.GS_UDF_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_DASHBOARD_SERVICE_ID}}!${{ secrets.GS_DASHBOARD_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_API_SERVER_URL}}!${{ secrets.GS_API_SERVER_URL }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATASERVICE_V1_AUDIENCE}}!${{ secrets.GS_WEAV_DATASERVICE_V1_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_INGESTION_SERVICE_SERVICE_ID}}!${{ secrets.GS_WEAV_INGESTION_SERVICE_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_INGESTION_SYNC_API}}!${{ secrets.GS_INGESTION_SYNC_API }}!g' main.yml
+          sed -i 's!{{GS_WEAV_INGESTION_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_INGESTION_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_SERVICE_ID}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_CLIENT_ID}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_CLIENT_ID }}!g' main.yml
+          sed -i 's!{{GS_AIRFLOW_WWW_USER_USERNAME}}!${{ secrets.GS_AIRFLOW_WWW_USER_USERNAME }}!g' main.yml
+          sed -i 's!{{GS_WEAV_METRICS_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_METRICS_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_PLOTTING_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_PLOTTING_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATABROWSER_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_DATABROWSER_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_MONGO_INITDB_ROOT_PASSWORD}}!${{ secrets.GS_MONGO_INITDB_ROOT_PASSWORD }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_GITHUB_CLIENT_ID}}!${{ secrets.GS_REACT_APP_GITHUB_CLIENT_ID }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FRONTEGG_URL}}!${{ secrets.GS_REACT_APP_FRONTEGG_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DEFAULT_ROLE}}!${{ secrets.GS_REACT_APP_DEFAULT_ROLE }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FRONTEGG_REDIRECT_CALLBACK_SUCCESS}}!${{ secrets.GS_REACT_APP_FRONTEGG_REDIRECT_CALLBACK_SUCCESS }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_INGESTION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_INGESTION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_FLOW_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_FLOW_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_NOTIFICATION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_NOTIFICATION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_PLOTTING_SERVICE_URL}}!${{ secrets.GS_REACT_APP_PLOTTING_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FEATURE_STORE_SERVICE_URL}}!${{ secrets.GS_REACT_APP_FEATURE_STORE_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_INTROSPECTION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_INTROSPECTION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_MARKETPLACE_SERVICE_URL}}!${{ secrets.GS_REACT_APP_MARKETPLACE_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_BROWSER_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_BROWSER_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_SOCKET_PATH}}!${{ secrets.GS_REACT_APP_SOCKET_PATH }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_MIXPANEL_PROJECT_TOKEN}}!${{ secrets.GS_REACT_APP_MIXPANEL_PROJECT_TOKEN }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_FRONTEGG_URL}}!${{ secrets.GS_VITE_APP_FRONTEGG_URL }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_SLOOMOO_DATASET_ID}}!${{ secrets.GS_VITE_APP_SLOOMOO_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_CANDYTOPIA_DATASET_ID}}!${{ secrets.GS_VITE_APP_CANDYTOPIA_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_ILLUMINARIUM_DATASET_ID}}!${{ secrets.GS_VITE_APP_ILLUMINARIUM_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_WONDERLAND_DATASET_ID}}!${{ secrets.GS_VITE_APP_WONDERLAND_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_MA_CUSTOMERS}}!${{ secrets.GS_VITE_APP_MA_CUSTOMERS }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATA_SERVICE}}!${{ secrets.GS_WEAV_DATA_SERVICE }}!g' main.yml
+          sed -i 's!{{GS_IQUANTI_SERVICE_AUDIENCE}}!${{ secrets.GS_IQUANTI_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{VARS_HOSTNAME}}!${{ vars.HOSTNAME }}!g' main.yml
+          sed -i 's!{{GS_WEAV_METRICS_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_METRICS_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_REDIS_QUEUE_URL}}!${{ secrets.GS_REDIS_QUEUE_URL }}!g' main.yml
+          sed -i 's!{{GS_FLASK_DATA_SERVICE_BASE_URL}}!${{ secrets.GS_FLASK_DATA_SERVICE_BASE_URL }}!g' main.yml
+          sed -i 's!{{GS_FLASK_AUDIENCE}}!${{ secrets.GS_FLASK_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_FLASK_SERVICE_ID}}!${{ secrets.GS_FLASK_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_SLOOMOO_DATASET_ID}}!${{ secrets.GS_SLOOMOO_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_CANDYTOPIA_DATASET_ID}}!${{ secrets.GS_CANDYTOPIA_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_ILLUMINARIUM_DATASET_ID}}!${{ secrets.GS_ILLUMINARIUM_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_WONDERLAND_DATASET_ID}}!${{ secrets.GS_WONDERLAND_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_C5DASHBOARD_SERVICE_ID}}!${{ secrets.GS_C5DASHBOARD_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_ALLOW_RECIPE_INGESTION_FROM_ANY_BRANCH}}!${{ secrets.GS_ALLOW_RECIPE_INGESTION_FROM_ANY_BRANCH }}!g' main.yml
+          sed -i 's!{{GS_REMOTE_API_TOKEN_URL}}!${{ secrets.GS_REMOTE_API_TOKEN_URL }}!g' main.yml
+          sed -i 's!{{GS_AUTHENTICATION_SERVICE_URL}}!${{ secrets.GS_AUTHENTICATION_SERVICE_URL }}!g' main.yml
+          cat main.yml
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: main.yml
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: my-artifact
+          path: distfiles
+          
+      - name: copy file via ssh key
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: 35.226.172.156
+          username: vijay
+          port: 22
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          source: distfiles/main.yml
+          target: /home/vijay/tempfiles
+
+      # GCP Service Account
+      - name: Auth GCP
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          
+      - name: Setup GCP Service Account
+        uses: google-github-actions/setup-gcloud@v1
+        
+      - id: 'compute-ssh'
+        uses: 'google-github-actions/ssh-compute@v0'
+        with:
+          instance_name: 'development-staging-app-weav-ai'
+          zone: 'us-central1-a'
+          ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
+          command: |
+           sudo docker compose -f /home/vijay/tempfiles/distfiles/main.yml pull
+           sudo cp /opt/swarm-deployment/main.yml /opt/swarm-deployment/main.yml.bkp
+           sudo cp /home/vijay/tempfiles/distfiles/main.yml /opt/swarm-deployment
+           sudo docker stack rm main
+           sudo docker stack rm nginx
+           wait 30
+           sudo docker stack deploy -c /opt/swarm-deployment/main.yml main
+           wait 30
+           sudo docker stack deploy -c /opt/swarm-deployment/nginx-proxy-manager/nginx.yml nginx
+           sudo sh /home/vijay/platform.sh
+      # Echo the output
+      - id: 'test'
+        run: |-
+          echo '${{ steps.compute-ssh.outputs.stdout }}'
+          echo '${{ steps.compute-ssh.outputs.stderr }}'
+
+  deploy-to-qa:
+    if: ${{ github.event.inputs.environment == 'qa' }}
+    runs-on: github-runner-weav
+    environment: 
+      name: QA
+      url: qa.app.weav.ai
+    steps:
+      - uses: actions/checkout@v3
+        name: Check out repo and platform version tag branch
+        with:
+          ref: ${{ github.event.inputs.platform_version }}
+          token: ${{ secrets.PERSONAL_TOKEN }}
+      
+      - name: Run replaces
+        run: |-
+          echo "Running replace Vars"
+          sed -i 's!{{GS_PUBLIC_KEY}}!${{ secrets.GS_PUBLIC_KEY }}!g' main.yml
+          sed -i 's!{{GS_GELF_ADDRESS}}!${{ secrets.GS_GELF_ADDRESS }}!g' main.yml
+          sed -i 's!{{GS_REMOTE_AUTHENTICATION_URL}}!${{ secrets.GS_REMOTE_AUTHENTICATION_URL }}!g' main.yml
+          sed -i 's!{{GS_UDF_SERVICE_ID}}!${{ secrets.GS_UDF_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_UDF_AUDIENCE}}!${{ secrets.GS_UDF_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_DASHBOARD_SERVICE_ID}}!${{ secrets.GS_DASHBOARD_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_API_SERVER_URL}}!${{ secrets.GS_API_SERVER_URL }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATASERVICE_V1_AUDIENCE}}!${{ secrets.GS_WEAV_DATASERVICE_V1_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_INGESTION_SERVICE_SERVICE_ID}}!${{ secrets.GS_WEAV_INGESTION_SERVICE_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_INGESTION_SYNC_API}}!${{ secrets.GS_INGESTION_SYNC_API }}!g' main.yml
+          sed -i 's!{{GS_WEAV_INGESTION_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_INGESTION_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_SERVICE_ID}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_CLIENT_ID}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_CLIENT_ID }}!g' main.yml
+          sed -i 's!{{GS_AIRFLOW_WWW_USER_USERNAME}}!${{ secrets.GS_AIRFLOW_WWW_USER_USERNAME }}!g' main.yml
+          sed -i 's!{{GS_WEAV_METRICS_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_METRICS_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_PLOTTING_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_PLOTTING_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATABROWSER_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_DATABROWSER_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_MONGO_INITDB_ROOT_PASSWORD}}!${{ secrets.GS_MONGO_INITDB_ROOT_PASSWORD }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_GITHUB_CLIENT_ID}}!${{ secrets.GS_REACT_APP_GITHUB_CLIENT_ID }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FRONTEGG_URL}}!${{ secrets.GS_REACT_APP_FRONTEGG_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DEFAULT_ROLE}}!${{ secrets.GS_REACT_APP_DEFAULT_ROLE }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FRONTEGG_REDIRECT_CALLBACK_SUCCESS}}!${{ secrets.GS_REACT_APP_FRONTEGG_REDIRECT_CALLBACK_SUCCESS }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_INGESTION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_INGESTION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_FLOW_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_FLOW_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_NOTIFICATION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_NOTIFICATION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_PLOTTING_SERVICE_URL}}!${{ secrets.GS_REACT_APP_PLOTTING_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FEATURE_STORE_SERVICE_URL}}!${{ secrets.GS_REACT_APP_FEATURE_STORE_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_INTROSPECTION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_INTROSPECTION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_MARKETPLACE_SERVICE_URL}}!${{ secrets.GS_REACT_APP_MARKETPLACE_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_BROWSER_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_BROWSER_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_SOCKET_PATH}}!${{ secrets.GS_REACT_APP_SOCKET_PATH }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_MIXPANEL_PROJECT_TOKEN}}!${{ secrets.GS_REACT_APP_MIXPANEL_PROJECT_TOKEN }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_FRONTEGG_URL}}!${{ secrets.GS_VITE_APP_FRONTEGG_URL }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_SLOOMOO_DATASET_ID}}!${{ secrets.GS_VITE_APP_SLOOMOO_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_CANDYTOPIA_DATASET_ID}}!${{ secrets.GS_VITE_APP_CANDYTOPIA_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_ILLUMINARIUM_DATASET_ID}}!${{ secrets.GS_VITE_APP_ILLUMINARIUM_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_WONDERLAND_DATASET_ID}}!${{ secrets.GS_VITE_APP_WONDERLAND_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_MA_CUSTOMERS}}!${{ secrets.GS_VITE_APP_MA_CUSTOMERS }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATA_SERVICE}}!${{ secrets.GS_WEAV_DATA_SERVICE }}!g' main.yml
+          sed -i 's!{{GS_IQUANTI_SERVICE_AUDIENCE}}!${{ secrets.GS_IQUANTI_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{VARS_HOSTNAME}}!${{ vars.HOSTNAME }}!g' main.yml
+          sed -i 's!{{GS_WEAV_METRICS_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_METRICS_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_REDIS_QUEUE_URL}}!${{ secrets.GS_REDIS_QUEUE_URL }}!g' main.yml
+          sed -i 's!{{GS_FLASK_DATA_SERVICE_BASE_URL}}!${{ secrets.GS_FLASK_DATA_SERVICE_BASE_URL }}!g' main.yml
+          sed -i 's!{{GS_FLASK_AUDIENCE}}!${{ secrets.GS_FLASK_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_FLASK_SERVICE_ID}}!${{ secrets.GS_FLASK_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_SLOOMOO_DATASET_ID}}!${{ secrets.GS_SLOOMOO_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_CANDYTOPIA_DATASET_ID}}!${{ secrets.GS_CANDYTOPIA_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_ILLUMINARIUM_DATASET_ID}}!${{ secrets.GS_ILLUMINARIUM_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_WONDERLAND_DATASET_ID}}!${{ secrets.GS_WONDERLAND_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_C5DASHBOARD_SERVICE_ID}}!${{ secrets.GS_C5DASHBOARD_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_ALLOW_RECIPE_INGESTION_FROM_ANY_BRANCH}}!${{ secrets.GS_ALLOW_RECIPE_INGESTION_FROM_ANY_BRANCH }}!g' main.yml
+          sed -i 's!{{GS_REMOTE_API_TOKEN_URL}}!${{ secrets.GS_REMOTE_API_TOKEN_URL }}!g' main.yml
+          sed -i 's!{{GS_AUTHENTICATION_SERVICE_URL}}!${{ secrets.GS_AUTHENTICATION_SERVICE_URL }}!g' main.yml
+          cat main.yml
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: main.yml
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: my-artifact
+          path: distfiles
+          
+      - name: copy file via ssh key
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: 34.172.191.146
+          username: vijay
+          port: 22
+          key: ${{ secrets.VIJAY_KEY }}
+          source: distfiles/main.yml
+          target: /home/vijay/tempfiles
+
+      # GCP Service Account
+      - name: Auth GCP
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          
+      - name: Setup GCP Service Account
+        uses: google-github-actions/setup-gcloud@v1
+        
+      - id: 'compute-ssh'
+        uses: 'google-github-actions/ssh-compute@v0'
+        with:
+          instance_name: 'development-qa-app-weav-ai'
+          zone: 'us-central1-a'
+          ssh_private_key: '${{ secrets.VIJAY_KEY }}'
+          command: |
+           sudo docker-compose -f /home/vijay/tempfiles/distfiles/main.yml pull
+           sudo cp /opt/swarm-deployment/main.yml /opt/swarm-deployment/main.yml.bkp
+           sudo cp /home/vijay/tempfiles/distfiles/main.yml /opt/swarm-deployment
+           sudo docker stack rm main
+           sudo docker stack rm nginx
+           sudo docker stack rm airflow1
+           sudo docker stack rm airflow2
+           sudo sh /home/vijay/operator.sh
+           sudo docker stack deploy -c /opt/swarm-deployment/airflow1.yml airflow1
+           wait 60
+           sudo docker stack deploy -c /opt/swarm-deployment/airflow2.yml airflow2
+           wait 180
+           sudo docker stack deploy -c /opt/swarm-deployment/main.yml main
+           wait 60
+           sudo docker stack deploy -c /opt/swarm-deployment/nginx-proxy-manager/nginx.yml nginx
+           120
+           sudo sh /home/vijay/platform.sh
+
+           
+      # Echo the output
+      - id: 'test'
+        run: |-
+          echo '${{ steps.compute-ssh.outputs.stdout }}'
+          echo '${{ steps.compute-ssh.outputs.stderr }}'
+  
+  deploy-to-dsrocks:
+    if: ${{ github.event.inputs.environment == 'dsrocks' }}
+    runs-on: github-runner-weav
+    environment: 
+      name: DSROCKS
+      url: dsrocks.weav.ai
+    steps:
+      - uses: actions/checkout@v3
+        name: Check out repo and platform version tag branch
+        with:
+          ref: ${{ github.event.inputs.platform_version }}
+          token: ${{ secrets.PERSONAL_TOKEN }}
+      
+      - name: Run replaces
+        run: |-
+          echo "Running replace Vars"
+          sed -i 's!{{GS_PUBLIC_KEY}}!${{ secrets.GS_PUBLIC_KEY }}!g' main.yml
+          sed -i 's!{{GS_GELF_ADDRESS}}!${{ secrets.GS_GELF_ADDRESS }}!g' main.yml
+          sed -i 's!{{GS_REMOTE_AUTHENTICATION_URL}}!${{ secrets.GS_REMOTE_AUTHENTICATION_URL }}!g' main.yml
+          sed -i 's!{{GS_UDF_SERVICE_ID}}!${{ secrets.GS_UDF_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_UDF_AUDIENCE}}!${{ secrets.GS_UDF_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_DASHBOARD_SERVICE_ID}}!${{ secrets.GS_DASHBOARD_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_API_SERVER_URL}}!${{ secrets.GS_API_SERVER_URL }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATASERVICE_V1_AUDIENCE}}!${{ secrets.GS_WEAV_DATASERVICE_V1_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_INGESTION_SERVICE_SERVICE_ID}}!${{ secrets.GS_WEAV_INGESTION_SERVICE_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_INGESTION_SYNC_API}}!${{ secrets.GS_INGESTION_SYNC_API }}!g' main.yml
+          sed -i 's!{{GS_WEAV_INGESTION_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_INGESTION_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_SERVICE_ID}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_CLIENT_ID}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_CLIENT_ID }}!g' main.yml
+          sed -i 's!{{GS_AIRFLOW_WWW_USER_USERNAME}}!${{ secrets.GS_AIRFLOW_WWW_USER_USERNAME }}!g' main.yml
+          sed -i 's!{{GS_WEAV_METRICS_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_METRICS_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_PLOTTING_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_PLOTTING_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATABROWSER_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_DATABROWSER_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_MONGO_INITDB_ROOT_PASSWORD}}!${{ secrets.GS_MONGO_INITDB_ROOT_PASSWORD }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_GITHUB_CLIENT_ID}}!${{ secrets.GS_REACT_APP_GITHUB_CLIENT_ID }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FRONTEGG_URL}}!${{ secrets.GS_REACT_APP_FRONTEGG_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DEFAULT_ROLE}}!${{ secrets.GS_REACT_APP_DEFAULT_ROLE }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FRONTEGG_REDIRECT_CALLBACK_SUCCESS}}!${{ secrets.GS_REACT_APP_FRONTEGG_REDIRECT_CALLBACK_SUCCESS }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_INGESTION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_INGESTION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_FLOW_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_FLOW_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_NOTIFICATION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_NOTIFICATION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_PLOTTING_SERVICE_URL}}!${{ secrets.GS_REACT_APP_PLOTTING_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FEATURE_STORE_SERVICE_URL}}!${{ secrets.GS_REACT_APP_FEATURE_STORE_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_INTROSPECTION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_INTROSPECTION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_MARKETPLACE_SERVICE_URL}}!${{ secrets.GS_REACT_APP_MARKETPLACE_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_BROWSER_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_BROWSER_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_SOCKET_PATH}}!${{ secrets.GS_REACT_APP_SOCKET_PATH }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_MIXPANEL_PROJECT_TOKEN}}!${{ secrets.GS_REACT_APP_MIXPANEL_PROJECT_TOKEN }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_FRONTEGG_URL}}!${{ secrets.GS_VITE_APP_FRONTEGG_URL }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_SLOOMOO_DATASET_ID}}!${{ secrets.GS_VITE_APP_SLOOMOO_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_CANDYTOPIA_DATASET_ID}}!${{ secrets.GS_VITE_APP_CANDYTOPIA_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_ILLUMINARIUM_DATASET_ID}}!${{ secrets.GS_VITE_APP_ILLUMINARIUM_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_WONDERLAND_DATASET_ID}}!${{ secrets.GS_VITE_APP_WONDERLAND_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_MA_CUSTOMERS}}!${{ secrets.GS_VITE_APP_MA_CUSTOMERS }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATA_SERVICE}}!${{ secrets.GS_WEAV_DATA_SERVICE }}!g' main.yml
+          sed -i 's!{{GS_IQUANTI_SERVICE_AUDIENCE}}!${{ secrets.GS_IQUANTI_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{VARS_HOSTNAME}}!${{ vars.HOSTNAME }}!g' main.yml
+          sed -i 's!{{GS_WEAV_METRICS_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_METRICS_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_REDIS_QUEUE_URL}}!${{ secrets.GS_REDIS_QUEUE_URL }}!g' main.yml
+          sed -i 's!{{GS_FLASK_DATA_SERVICE_BASE_URL}}!${{ secrets.GS_FLASK_DATA_SERVICE_BASE_URL }}!g' main.yml
+          sed -i 's!{{GS_FLASK_AUDIENCE}}!${{ secrets.GS_FLASK_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_FLASK_SERVICE_ID}}!${{ secrets.GS_FLASK_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_SLOOMOO_DATASET_ID}}!${{ secrets.GS_SLOOMOO_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_CANDYTOPIA_DATASET_ID}}!${{ secrets.GS_CANDYTOPIA_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_ILLUMINARIUM_DATASET_ID}}!${{ secrets.GS_ILLUMINARIUM_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_WONDERLAND_DATASET_ID}}!${{ secrets.GS_WONDERLAND_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_C5DASHBOARD_SERVICE_ID}}!${{ secrets.GS_C5DASHBOARD_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_ALLOW_RECIPE_INGESTION_FROM_ANY_BRANCH}}!${{ secrets.GS_ALLOW_RECIPE_INGESTION_FROM_ANY_BRANCH }}!g' main.yml
+          sed -i 's!{{GS_REMOTE_API_TOKEN_URL}}!${{ secrets.GS_REMOTE_API_TOKEN_URL }}!g' main.yml
+          sed -i 's!{{GS_AUTHENTICATION_SERVICE_URL}}!${{ secrets.GS_AUTHENTICATION_SERVICE_URL }}!g' main.yml
+          cat main.yml
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: main.yml
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: my-artifact
+          path: distfiles
+          
+      - name: copy file via ssh key
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: 34.71.170.124
+          username: vijay
+          port: 22
+          key: ${{ secrets.VIJAY_KEY }}
+          source: distfiles/main.yml
+          target: /home/vijay/tempfiles
+
+      # GCP Service Account
+      - name: Auth GCP
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          
+      - name: Setup GCP Service Account
+        uses: google-github-actions/setup-gcloud@v1
+        
+      - id: 'compute-ssh'
+        uses: 'google-github-actions/ssh-compute@v0'
+        with:
+          instance_name: 'development-dsrocks-weav-ai'
+          zone: 'us-central1-b'
+          ssh_private_key: '${{ secrets.VIJAY_KEY }}'
+          command: |
+           sudo docker compose -f /home/vijay/tempfiles/distfiles/main.yml pull
+           sudo cp /opt/swarm-deployment/main.yml /opt/swarm-deployment/main.yml.bkp
+           sudo cp /home/vijay/tempfiles/distfiles/main.yml /opt/swarm-deployment
+           sudo docker stack rm main
+           sudo docker stack rm nginx
+           wait 30
+           sudo docker stack deploy -c /opt/swarm-deployment/main.yml main
+           wait 30
+           sudo docker stack deploy -c /opt/swarm-deployment/nginx-proxy-manager/nginx.yml nginx
+           sudo sh /home/vijay/platform.sh
+      # Echo the output
+      - id: 'test'
+        run: |-
+          echo '${{ steps.compute-ssh.outputs.stdout }}'
+          echo '${{ steps.compute-ssh.outputs.stderr }}'
+
+
+
+  deploy-to-app:
+    if: ${{ github.event.inputs.environment == 'app' }}
+    runs-on: github-runner-weav
+    environment: 
+      name: PROD
+      url: app.weav.ai
+
+    steps:
+      - uses: actions/checkout@v3
+        name: Check out repo and platform version tag branch
+        with:
+          ref: ${{ github.event.inputs.platform_version }}
+          token: ${{ secrets.PERSONAL_TOKEN }}
+      
+      - name: Run replaces
+        run: |-
+          echo "Running replace Vars"
+          sed -i 's!{{GS_PUBLIC_KEY}}!${{ secrets.GS_PUBLIC_KEY }}!g' main.yml
+          sed -i 's!{{GS_GELF_ADDRESS}}!${{ secrets.GS_GELF_ADDRESS }}!g' main.yml
+          sed -i 's!{{GS_REMOTE_AUTHENTICATION_URL}}!${{ secrets.GS_REMOTE_AUTHENTICATION_URL }}!g' main.yml
+          sed -i 's!{{GS_UDF_SERVICE_ID}}!${{ secrets.GS_UDF_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_UDF_AUDIENCE}}!${{ secrets.GS_UDF_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_DASHBOARD_SERVICE_ID}}!${{ secrets.GS_DASHBOARD_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_API_SERVER_URL}}!${{ secrets.GS_API_SERVER_URL }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATASERVICE_V1_AUDIENCE}}!${{ secrets.GS_WEAV_DATASERVICE_V1_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_INGESTION_SERVICE_SERVICE_ID}}!${{ secrets.GS_WEAV_INGESTION_SERVICE_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_INGESTION_SYNC_API}}!${{ secrets.GS_INGESTION_SYNC_API }}!g' main.yml
+          sed -i 's!{{GS_WEAV_INGESTION_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_INGESTION_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_SERVICE_ID}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATAFLOW_SERVICE_CLIENT_ID}}!${{ secrets.GS_WEAV_DATAFLOW_SERVICE_CLIENT_ID }}!g' main.yml
+          sed -i 's!{{GS_AIRFLOW_WWW_USER_USERNAME}}!${{ secrets.GS_AIRFLOW_WWW_USER_USERNAME }}!g' main.yml
+          sed -i 's!{{GS_WEAV_METRICS_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_METRICS_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_PLOTTING_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_PLOTTING_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATABROWSER_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_DATABROWSER_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_MONGO_INITDB_ROOT_PASSWORD}}!${{ secrets.GS_MONGO_INITDB_ROOT_PASSWORD }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_GITHUB_CLIENT_ID}}!${{ secrets.GS_REACT_APP_GITHUB_CLIENT_ID }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FRONTEGG_URL}}!${{ secrets.GS_REACT_APP_FRONTEGG_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DEFAULT_ROLE}}!${{ secrets.GS_REACT_APP_DEFAULT_ROLE }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FRONTEGG_REDIRECT_CALLBACK_SUCCESS}}!${{ secrets.GS_REACT_APP_FRONTEGG_REDIRECT_CALLBACK_SUCCESS }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_INGESTION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_INGESTION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_FLOW_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_FLOW_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_NOTIFICATION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_NOTIFICATION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_PLOTTING_SERVICE_URL}}!${{ secrets.GS_REACT_APP_PLOTTING_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_FEATURE_STORE_SERVICE_URL}}!${{ secrets.GS_REACT_APP_FEATURE_STORE_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_INTROSPECTION_SERVICE_URL}}!${{ secrets.GS_REACT_APP_INTROSPECTION_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_MARKETPLACE_SERVICE_URL}}!${{ secrets.GS_REACT_APP_MARKETPLACE_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_DATA_BROWSER_SERVICE_URL}}!${{ secrets.GS_REACT_APP_DATA_BROWSER_SERVICE_URL }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_SOCKET_PATH}}!${{ secrets.GS_REACT_APP_SOCKET_PATH }}!g' main.yml
+          sed -i 's!{{GS_REACT_APP_MIXPANEL_PROJECT_TOKEN}}!${{ secrets.GS_REACT_APP_MIXPANEL_PROJECT_TOKEN }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_FRONTEGG_URL}}!${{ secrets.GS_VITE_APP_FRONTEGG_URL }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_SLOOMOO_DATASET_ID}}!${{ secrets.GS_VITE_APP_SLOOMOO_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_CANDYTOPIA_DATASET_ID}}!${{ secrets.GS_VITE_APP_CANDYTOPIA_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_ILLUMINARIUM_DATASET_ID}}!${{ secrets.GS_VITE_APP_ILLUMINARIUM_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_WONDERLAND_DATASET_ID}}!${{ secrets.GS_VITE_APP_WONDERLAND_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_VITE_APP_MA_CUSTOMERS}}!${{ secrets.GS_VITE_APP_MA_CUSTOMERS }}!g' main.yml
+          sed -i 's!{{GS_WEAV_DATA_SERVICE}}!${{ secrets.GS_WEAV_DATA_SERVICE }}!g' main.yml
+          sed -i 's!{{GS_IQUANTI_SERVICE_AUDIENCE}}!${{ secrets.GS_IQUANTI_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{VARS_HOSTNAME}}!${{ vars.HOSTNAME }}!g' main.yml
+          sed -i 's!{{GS_WEAV_METRICS_SERVICE_AUDIENCE}}!${{ secrets.GS_WEAV_METRICS_SERVICE_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_REDIS_QUEUE_URL}}!${{ secrets.GS_REDIS_QUEUE_URL }}!g' main.yml
+          sed -i 's!{{GS_FLASK_DATA_SERVICE_BASE_URL}}!${{ secrets.GS_FLASK_DATA_SERVICE_BASE_URL }}!g' main.yml
+          sed -i 's!{{GS_FLASK_AUDIENCE}}!${{ secrets.GS_FLASK_AUDIENCE }}!g' main.yml
+          sed -i 's!{{GS_FLASK_SERVICE_ID}}!${{ secrets.GS_FLASK_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_SLOOMOO_DATASET_ID}}!${{ secrets.GS_SLOOMOO_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_CANDYTOPIA_DATASET_ID}}!${{ secrets.GS_CANDYTOPIA_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_ILLUMINARIUM_DATASET_ID}}!${{ secrets.GS_ILLUMINARIUM_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_WONDERLAND_DATASET_ID}}!${{ secrets.GS_WONDERLAND_DATASET_ID }}!g' main.yml
+          sed -i 's!{{GS_C5DASHBOARD_SERVICE_ID}}!${{ secrets.GS_C5DASHBOARD_SERVICE_ID }}!g' main.yml
+          sed -i 's!{{GS_ALLOW_RECIPE_INGESTION_FROM_ANY_BRANCH}}!${{ secrets.GS_ALLOW_RECIPE_INGESTION_FROM_ANY_BRANCH }}!g' main.yml
+          sed -i 's!{{GS_REMOTE_API_TOKEN_URL}}!${{ secrets.GS_REMOTE_API_TOKEN_URL }}!g' main.yml
+          sed -i 's!{{GS_AUTHENTICATION_SERVICE_URL}}!${{ secrets.GS_AUTHENTICATION_SERVICE_URL }}!g' main.yml
+          cat main.yml
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: main.yml
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: my-artifact
+          path: distfiles
+          
+      - name: copy file via ssh key
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: 35.192.36.243
+          username: vijay
+          port: 22
+          key: ${{ secrets.VIJAY_KEY }}
+          source: distfiles/main.yml
+          target: /home/vijay/tempfiles
+
+      # GCP Service Account
+      - name: Auth GCP
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          
+      - name: Setup GCP Service Account
+        uses: google-github-actions/setup-gcloud@v1
+        
+      - id: 'compute-ssh'
+        uses: 'google-github-actions/ssh-compute@v0'
+        with:
+          instance_name: 'weav-app2-vm'
+          zone: 'us-central1-c'
+          ssh_private_key: '${{ secrets.VIJAY_KEY }}'
+          command: |
+           sudo docker compose -f /home/vijay/tempfiles/distfiles/main.yml pull
+           sudo cp /opt/swarm-deployment/main.yml /opt/swarm-deployment/main.yml.bkp
+           sudo cp /home/vijay/tempfiles/distfiles/main.yml /opt/swarm-deployment
+           sudo docker stack rm main
+           sudo docker stack rm nginx
+           wait 30
+           sudo docker stack deploy -c /opt/swarm-deployment/main.yml main
+           wait 30
+           sudo docker stack deploy -c /opt/swarm-deployment/nginx-proxy-manager/nginx.yml nginx
+      # Echo the output
+      - id: 'test'
+        run: |-
+          echo '${{ steps.compute-ssh.outputs.stdout }}'
+          echo '${{ steps.compute-ssh.outputs.stderr }}'
