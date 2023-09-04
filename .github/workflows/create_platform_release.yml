@@ -268,7 +268,11 @@ jobs:
     needs: [fetch_tags, bump_platform_version, generate_readme, generate_yml]
     runs-on: github-runner-weav
     steps:
-### Push the tag and create new branch      
+### Push the tag and create new branch    
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PERSONAL_TOKEN }}  
+
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Automated Change
